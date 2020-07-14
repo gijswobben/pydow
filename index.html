@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <script type="text/javascript">
+            // set the pyodide files URL (packages.json, pyodide.asm.data etc)
+            window.languagePluginUrl = 'https://pyodide-cdn2.iodide.io/v0.15.0/full/';
+
+        </script>
+        <script src="https://pyodide-cdn2.iodide.io/v0.15.0/full/pyodide.js"></script>
+
+        <!-- TODO: make dynamic -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.3.6/css/uikit.min.css" rel="stylesheet" crossorigin="anonymous" integrity="sha256-P21Ubll6jATiBZ6SPPZLB4/5WEasygQTQoB3ak+txpg=">
+    </head>
+
+    <body>
+
+        <!-- The location to mount anything -->
+        <div id="main"></div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.3.6/js/uikit.min.js" crossorigin="anonymous" integrity="sha256-6/lCREhUdUFeeNhLV+/oTcSrL5brbf4wEiKnVdhpCjg="></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.3.6/js/uikit-icons.min.js" crossorigin="anonymous" integrity="sha256-fU8d8TWFkE83Yb/hT5f7w5C5jOXUiKCdfWbiLubnpEc="></script>
+        <script type="text/javascript">
+
+            function loadPythonFile(url) {
+                return fetch(url).then((response) => response.text());
+            }
+
+            // The Python packages to load
+            const pythonPackages = [
+                'beautifulsoup4',
+                'Jinja2',
+            ]
+
+            // The Python files that contain the app
+            const pythonFiles = [
+                'pydow.py',
+                'test_app.py',
+            ];
+
+            // Load Python
+            languagePluginLoader
+                .then(() => {
+
+                    // Load additional packages
+                    pyodide.loadPackage(pythonPackages)
+                        .then(() => {
+
+                            // Load all the Python files
+                            Promise.all(pythonFiles.map(loadPythonFile))
+                                .then((codeFiles) => {
+
+                                    // Run the code of each file
+                                    codeFiles.forEach((code) => {
+                                        pyodide.runPython(code);
+                                    });
+                                })
+                                .then(() => {
+
+                                    // Start the app
+                                    pyodide.runPython('DOM = Dom(root=Root, selector="#main")');
+                                });
+                        });
+            });
+
+        </script>
+    </body>
+</html>
